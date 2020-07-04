@@ -8,6 +8,6 @@ class TradeController extends AbstractController
 {
     public function indexAction()
     {
-        return $this->render('trade');
+        return $this->getView('trade');
     }
 }

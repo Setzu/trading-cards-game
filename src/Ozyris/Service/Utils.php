@@ -8,8 +8,48 @@
 
 namespace Ozyris\Service;
 
+use DateTime;
+
 class Utils
 {
+
+    /**
+     * @param string $date
+     * @return string
+     */
+    public static function formatDateToEU($date = '')
+    {
+        if (empty($date)) {
+            return date('d/m/Y H:i:s');
+        }
+
+        $oDate = DateTime::createFromFormat('Y-m-d H:i:s', $date);
+
+        if (!$oDate) {
+            return $date;
+        }
+
+        return $oDate->format('d/m H:i');
+    }
+
+    /**
+     * @param string $date
+     * @return string
+     */
+    public static function formatDateForReception($date = '')
+    {
+        if (empty($date)) {
+            return date('d/m/Y H:i:s');
+        }
+
+        $oDate = DateTime::createFromFormat('Y-m-d H:i:s', $date);
+
+        if (!$oDate) {
+            return $date;
+        }
+
+        return $oDate->format('d/m/Y H:i');
+    }
 
     /**
      * Execute un var_dump
@@ -21,7 +61,7 @@ class Utils
     {
         echo '<pre>'; var_dump($value);
         if ($die) {
-            die('Fin du var_dump.');
+            die('Fin.');
         } else {
             echo '</pre>';
         }
@@ -40,7 +80,7 @@ class Utils
         {
             echo $method_name . '<br/>';
         }
-        die('Fin de récupération des méthodes.');
+        die('Fin.');
     }
 
 }

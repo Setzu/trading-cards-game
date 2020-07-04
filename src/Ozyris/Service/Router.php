@@ -10,17 +10,22 @@ namespace Ozyris\Service;
 
 use Ozyris\Controller;
 
-abstract class Dispatch
+class Router
 {
+    public $controller;
+    public $action;
+
     const DEFAULT_CONTROLLER = 'IndexController';
     const DEFAULT_ACTION = 'indexAction';
 
     /**
      * Détermine le controller et l'action à appeler en fonction des paramètres passés dans l'url
+     * Fonctionne URL Rewriting du .htaccess
+     * Vérifier les droits en écriture d'apache sur le serveur en cas de dysfonctionnement
      *
      * @return mixed
      */
-    public static function dispatch()
+    public function run()
     {
         // Récupère le nom du contrôleur en paramètre dans l'url
         if (!empty($_GET['controller'])) {

@@ -8,9 +8,7 @@
 
 namespace Ozyris\Form\Validator;
 
-use Ozyris\Stdlib\ValidatorInterface;
-
-class StandardValidator // implements ValidatorInterface
+class StandardValidator
 {
     const IS_EMPTY = "ChampVide";
     const TOO_LONG = "ChampTropLong";

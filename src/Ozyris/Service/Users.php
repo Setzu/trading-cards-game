@@ -8,6 +8,9 @@
 
 namespace Ozyris\Service;
 
+
+use Ozyris\Exception\ServiceException;
+
 class Users
 {
 
@@ -15,38 +18,43 @@ class Users
     protected $username;
     protected $email;
     protected $password;
-    protected $date_registration;
-    protected $admin = 0;
+    protected $lastConnection;
+    protected $dateRegistration;
     protected $role = 'member';
 
     /**
      * Users constructor.
      * @param array $aDonnees
+     * @throws ServiceException
      */
     public function __construct(array $aDonnees = array())
     {
         if (!empty($aDonnees)) {
-            try {
-                $this->hydrate($aDonnees);
-            } catch(\Exception $e) {
-                echo $e->getMessage();
-            }
+            $this->hydrate($aDonnees);
         }
     }
 
     /**
      * @param array $aUsers
      * @return $this
-     * @throws \Exception
+     * @throws ServiceException
      */
     public function hydrate(array $aUsers = array())
     {
         foreach($aUsers as $attribut => $value) {
 
-            $method = 'set' . ucfirst(strtolower($attribut));
+            if (strpos($attribut, '_')) {
+                $method = 'set';
+                $aString = explode('_', $attribut);
+                foreach ($aString as $k => $string) {
+                    $method .= ucfirst(strtolower($string));
+                }
+            } else {
+                $method = 'set' . ucfirst(strtolower($attribut));
+            }
 
             if (!method_exists($this, $method)) {
-                throw new \Exception('La méthode set' . ucfirst(strtolower($attribut)) . ' n\'existe pas.');
+                throw new ServiceException('Service Users : La méthode set' . ucfirst(strtolower($attribut)) . ' n\'existe pas.');
             }
 
             $this->$method($value);
@@ -124,31 +132,15 @@ class Users
      */
     public function getDateRegistration()
     {
-        return $this->date_registration;
+        return $this->dateRegistration;
     }
 
     /**
-     * @param mixed $date_registration
+     * @param mixed $dateRegistration
      */
-    public function setDateRegistration($date_registration)
+    public function setDateRegistration($dateRegistration)
     {
-        $this->date_registration = $date_registration;
-    }
-
-    /**
-     * @return boolean
-     */
-    public function isAdmin()
-    {
-        return $this->admin;
-    }
-
-    /**
-     * @param boolean $admin
-     */
-    public function setAdmin($admin)
-    {
-        $this->admin = $admin;
+        $this->dateRegistration = $dateRegistration;
     }
 
     /**
@@ -165,6 +157,22 @@ class Users
     public function setRole($role)
     {
         $this->role = $role;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getLastConnection()
+    {
+        return $this->lastConnection;
+    }
+
+    /**
+     * @param mixed $lastConnection
+     */
+    public function setLastConnection($lastConnection)
+    {
+        $this->lastConnection = $lastConnection;
     }
 
 

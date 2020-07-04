@@ -1,14 +1,14 @@
 $(function () {
-
     $('a#link-tab2').on('click', function () {
+        $('div.ajax-loader').show();
 
         $.ajax({
             method: 'POST',
-            url: '/collection/tab',
+            url: '/collection/loadtable',
             data: {
-                action: 'tab'
+                action: 'loadtable'
             },
-            dataType: 'html',
+            dataType: "html",
             success: function (data) {
                 $('div#tabs-2').html(data);
             },
@@ -20,4 +20,5 @@ $(function () {
             }
         });
     });
+    $('div.ajax-loader').hide();
 });

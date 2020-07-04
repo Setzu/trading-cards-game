@@ -6,9 +6,8 @@
  * Time: 13:54
  */
 
-use Ozyris\Controller\IndexController;
+use Ozyris\Service\SessionManager;
 
-$oIndexController = new IndexController();
 ?>
 
 <html lang="fr">
@@ -16,12 +15,20 @@ $oIndexController = new IndexController();
 <head>
     <title></title>
     <meta charset="UTF-8">
+    <!-- CSS -->
     <link rel="stylesheet" type="text/css" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.0/css/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.21/css/jquery.dataTables.min.css">
     <link rel="stylesheet" type="text/css" href="/../css/layout.css">
-    <link rel="stylesheet" type="text/css" href="/../css/texts-effects.css">
+    <link rel="stylesheet" type="text/css" href="/../css/cards-effects.css">
     <link rel="stylesheet" type="text/css" href="/../css/items.css">
     <link rel="stylesheet" href="//code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
+
+    <!-- JS -->
+    <script src="https://code.jquery.com/jquery-3.5.1.min.js"
+            integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
+            crossorigin="anonymous"></script>
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+    <script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
 </head>
 
 <body>
@@ -31,13 +38,12 @@ $oIndexController = new IndexController();
 </header>
 
 <div class="container-fluid">
-    <div class="row justify-content-md-center flashmessage">
+    <div class="row justify-content-md-center">
         <div class="col-md-6">
-            <?php $oIndexController->flashMessages(); ?>
+            <?php SessionManager::flashMessages(); ?>
         </div>
     </div>
-
-    <?php \Ozyris\Service\Dispatch::dispatch(); ?>
+    <?php require_once $this->content; ?>
 </div>
 
 <footer>

@@ -18,7 +18,7 @@ class CardsList extends CardsListModel
         $iPack = (int) $pack;
 
         if ($iPack) {
-            return parent::getCardsByPack($iPack);
+            return parent::selectCardsByPack($iPack);
         } else {
             return [];
         }
@@ -29,7 +29,7 @@ class CardsList extends CardsListModel
      */
     public function getCardsList()
     {
-        return parent::getCardsList();
+        return parent::selectCardsList();
     }
 
     /**
@@ -43,7 +43,7 @@ class CardsList extends CardsListModel
         $iRarity = (int) $rarity;
 
         if ($iRarity) {
-            return parent::getCardsByPackAndRarity($iPack, $iRarity);
+            return $this->selectCardsByPackAndRarity($iPack, $iRarity);
         } else {
             return [];
         }
@@ -57,12 +57,8 @@ class CardsList extends CardsListModel
      */
     public function getCard($idCard, $pack, $rarity)
     {
-        $iIdCard = (int) $idCard;
-        $iPack = (int) $pack;
-        $iRarity = (int) $rarity;
-
-        if ($iIdCard && $iRarity) {
-            return parent::getCard($iIdCard, $iPack, $iRarity);
+        if ($idCard && $rarity && $pack) {
+            return parent::selectCard($idCard, $pack, $rarity);
         } else {
             return [];
         }
@@ -73,13 +69,10 @@ class CardsList extends CardsListModel
      * @param int $pack
      * @return array
      */
-    public function getCounterByIdAndPack($idCard, $pack)
+    public function getCounterByIdAndPack(int $idCard, int $pack)
     {
-        $iIdCard = (int) $idCard;
-        $iIdPack = (int) $pack;
-
-        if ($iIdCard) {
-            return parent::getCounterByIdAndPack($iIdCard, $iIdPack);
+        if ($idCard) {
+            return $this->selectCounterByIdAndPack($idCard, $pack);
         } else {
             return [];
         }
@@ -91,15 +84,14 @@ class CardsList extends CardsListModel
      * @param int $quantity
      * @return bool
      */
-    public function incrementCounter($idCard, $pack, $quantity)
+    public function incrementCounter(int $idCard, int $pack, int $quantity)
     {
         $aInfosCard = $this->getCounterByIdAndPack($idCard, $pack);
-        $iQuantity = (int) $quantity;
 
-        if (empty($aInfosCard) || !$iQuantity) {
+        if (empty($aInfosCard) || !$quantity) {
             return false;
         }
 
-        return parent::incrementCounterById($aInfosCard['id'], $aInfosCard['counter'] + $quantity);
+        return $this->updateCounter($aInfosCard['id'], $aInfosCard['counter'] + $quantity);
     }
 }

@@ -43,6 +43,7 @@
                 <a href="/authentification">Déjà un compte ?</a>
             </div>
             <div class="col-sm-2" style="text-align: right;">
+                <input name="registrationToken" type="hidden" id="registrationToken" value="<?= $this->registrationToken; ?>" />
                 <button type="submit" class="btn btn-primary">S'inscrire</button>
             </div>
         </div>

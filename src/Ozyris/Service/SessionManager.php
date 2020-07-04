@@ -15,8 +15,10 @@ abstract class SessionManager
 
     const DEFAULT_EXPIRATION_TIME = 60;
     const FLASH_MESSAGE = 'flashmessage';
+    const ALERTS = 'alerts';
     const DANGER = 'danger';
     const SUCCESS = 'success';
+    const WARNING = 'warning';
 
     public function __construct()
     {
@@ -43,50 +45,17 @@ abstract class SessionManager
     /**
      * Enregistre $value en session
      *
-     * @param mixed $values
-     * @return array|mixed
+     * @param array $values
      * @throws \Exception
      */
-    public function setSessionValues($values)
+    public function setSessionValues(array $values)
     {
-        if (!is_array($values)) {
-            $_SESSION[] = $values;
-        } else {
-            foreach ($values as $k => $v) {
-                if (!is_string($k) && !is_int($k)) {
-                    throw new \Exception('La clé doit être un entier ou une chaine de caractères.');
-                }
-                $_SESSION[$k] = $v;
+        foreach ($values as $k => $v) {
+            if (!is_string($k) && !is_int($k)) {
+                throw new \Exception('Session Manager : La clé doit être un entier ou une chaine de caractères.');
             }
+            $_SESSION[$k] = $v;
         }
-
-        return $_SESSION;
-    }
-
-    /**
-     * Retourne le user stocké en session
-     *
-     * @return Users | null
-     */
-    public function getUser()
-    {
-        if (session_status() == PHP_SESSION_ACTIVE && array_key_exists('user', $_SESSION) && $_SESSION['user'] instanceof Users) {
-            return $_SESSION['user'];
-        } else {
-            return null;
-        }
-    }
-
-    /**
-     * Récupère toute la session
-     *
-     * @return array
-     */
-    public function getSession()
-    {
-        $this->startSession();
-
-        return $_SESSION;
     }
 
     /**
@@ -135,41 +104,44 @@ abstract class SessionManager
     }
 
     /**
-     * Stocke les flashmessages en session
+     * Stocke les flash messages en session
      *
-     * @param $message
-     * @param bool|true $error
-     * @return $this
+     * @param string $message
+     * @param bool $error
      */
-    public function setFlashMessage($message, $error = true)
+    public function addFlashMessage(string $message, bool $error = true)
     {
-        if ($error) {
-            $type = self::DANGER;
-        } else {
-            $type = self::SUCCESS;
-        }
-
-        $_SESSION[self::FLASH_MESSAGE][$type] = $message;
-
-        return $this;
+        $_SESSION[self::FLASH_MESSAGE][$error ? self::DANGER : self::SUCCESS] = ['message' => $message];
     }
 
     /**
      * Affiche le message selon le type, et appelle la méthode destroySessionValue
      *
-     * @return SessionManager
+     * @return string
      */
-    public function flashMessages()
+    public static function flashMessages()
     {
+        $sFlashMessages = '';
+
         if (array_key_exists(self::FLASH_MESSAGE, $_SESSION)) {
-            echo '<ul>';
             foreach ($_SESSION[self::FLASH_MESSAGE] as $type => $message) {
-                echo "<div class='flashmessage alert alert-$type'><li>$message</li></div>";
+                if ($type == self::DANGER) {
+                    $icon = "<svg class='bi bi-x-circle-fill' width='1em' height='1em' viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'>
+  <path fill-rule='evenodd' d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-4.146-3.146a.5.5 0 0 0-.708-.708L8 7.293 4.854 4.146a.5.5 0 1 0-.708.708L7.293 8l-3.147 3.146a.5.5 0 0 0 .708.708L8 8.707l3.146 3.147a.5.5 0 0 0 .708-.708L8.707 8l3.147-3.146z'/>
+</svg>";
+                } else {
+                    $icon = "<svg class='bi bi-check-circle-fill' width='1em' height='1em' viewBox='0 0 16 16' fill='currentColor' xmlns='http://www.w3.org/2000/svg'>
+  <path fill-rule='evenodd' d='M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0zm-3.97-3.03a.75.75 0 0 0-1.08.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-.01-1.05z'/>
+</svg>";
+                }
+
+                $sFlashMessages .= "<div class='flashmessage alert alert-$type'>" . $icon . "&nbsp;". $message['message'] . '</div><br>';
             }
-            echo '</ul>';
         }
 
-        return $this->destroySessionValue(self::FLASH_MESSAGE);
+        unset($_SESSION[self::FLASH_MESSAGE]);
+
+        echo $sFlashMessages;
     }
 
     /**

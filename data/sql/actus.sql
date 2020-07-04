@@ -1,0 +1,8 @@
+DROP TABLE actus;
+
+CREATE TABLE IF NOT EXISTS actus (
+  id int PRIMARY KEY NOT NULL AUTO_INCREMENT,
+  username char(50) NOT NULL,
+  cardname char(255) NOT NULL,
+  date_registration TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+) DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;

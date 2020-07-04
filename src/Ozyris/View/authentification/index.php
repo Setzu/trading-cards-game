@@ -22,7 +22,8 @@
                     <input type="password" name="password" required="required" class="form-control" placeholder="Mot de passe">
                 </label>
             </div>
-            <button type="submit" class="btn btn-success">Se connecter</button>
+            <input name="connectToken" type="hidden" id="connectToken" value="<?= $this->connectToken; ?>" />
+            <button type="submit" class="btn btn-success" style="margin-bottom: 20px;">Se connecter</button>
             <br>
             <a href="/password">Mot de passe perdu ?</a>
         </form>

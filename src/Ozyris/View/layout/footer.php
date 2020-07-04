@@ -6,13 +6,10 @@
  * Time: 14:36
  */
 ?>
-
-<script src="https://code.jquery.com/jquery-3.5.1.min.js"
-        integrity="sha256-9/aliU8dGd2tb6OSsuzixeV4y/faTqgFtohetphbbj0="
-        crossorigin="anonymous"></script>
-<script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
-<script type="text/javascript" src="https://cdn.datatables.net/1.10.21/js/jquery.dataTables.min.js"></script>
-<script type="text/javascript" src="/js/collection-datatable.js"></script>
-<script type="text/javascript" src="/js/ajax.js"></script>
-<script type="text/javascript" src="/js/tab.js"></script>
-
+<a href="#logo" style="float: right; color: #848484;">
+    <svg class="bi bi-arrow-up-circle" width="32" height="32" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+        <path fill-rule="evenodd" d="M8 15A7 7 0 1 0 8 1a7 7 0 0 0 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z"/>
+        <path fill-rule="evenodd" d="M4.646 8.354a.5.5 0 0 0 .708 0L8 5.707l2.646 2.647a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 0 0 0 .708z"/>
+        <path fill-rule="evenodd" d="M8 11.5a.5.5 0 0 0 .5-.5V6a.5.5 0 0 0-1 0v5a.5.5 0 0 0 .5.5z"/>
+    </svg>
+</a>

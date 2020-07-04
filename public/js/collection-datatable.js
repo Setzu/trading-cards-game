@@ -1,6 +1,11 @@
-$(document).ready( function () {
-    // TODO Récupérer total depuis BDD
+$(function () {
+// TODO Récupérer total depuis fichier de conf
     $('#collection-table').DataTable({
+        "order": [[ 1, "asc" ]],
+        "aoColumnDefs": [
+            { "bSortable": false, "aTargets": [ 0, 5 ] },
+            { "bSearchable": false, "aTargets": [ 0, 5 ] }
+        ],
         "language": {
             "paginate": {
                 "previous": 'Précédent',
@@ -9,10 +14,10 @@ $(document).ready( function () {
             "search": 'Recherche par mots clés',
             "lengthMenu": 'Afficher _MENU_ cartes par page',
             "sZeroRecords": 'Vous n\'avez pas de cartes',
-            "sInfoEmpty": '0 message en attente de réponse',
+            "sInfoEmpty": '0/44',
             "sInfoFiltered": '',
             "emptyTable": '',
-            "info": 'Vous avez obtenu _TOTAL_/39 cartes'
+            "info": 'Vous avez obtenu _TOTAL_/44 cartes'
         }
     });
-} );
+})

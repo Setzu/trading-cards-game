@@ -8,19 +8,19 @@
 
 namespace Ozyris\Controller;
 
-use Ozyris\Service\SessionManager;
+use Ozyris\Service\Actus;
 
 class IndexController extends AbstractController
 {
 
     public function indexAction()
     {
-        if (SessionManager::isAuth()) {
-            $this->setVariables([
-                'user' => $this->getUser()
-            ]);
-        }
+        $oActus = new Actus();
 
-        return $this->render();
+        $this->setVariables([
+            'aLastsURCards' => $oActus->getLastsURCards()
+        ]);
+
+        return $this->getView();
     }
 }

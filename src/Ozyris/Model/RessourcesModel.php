@@ -4,56 +4,49 @@
 namespace Ozyris\Model;
 
 
+use Ozyris\Exception\ModelException;
+
 class RessourcesModel extends AbstractModel
 {
 
     const SQL_ERROR = "Une erreur s'est produite, veuillez réessayer ultérieurement.";
 
     /**
-     * @param $iIdUser
+     * @param int $iIdUser
      * @return int
+     * @throws ModelException
      */
-    public function getMoneyByIdUser($iIdUser)
+    public function selectRubisByIdUser(int $iIdUser)
     {
-        $sql = "SELECT money FROM ressources WHERE id_user = :id_user";
+        $sql = "SELECT rubis FROM ressources WHERE id_user = :id_user";
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':id_user', $iIdUser);
 
-        try {
-            $stmt->bindParam(':id_user', $iIdUser);
-
-            if (!$stmt->execute()) {
+        if (!$stmt->execute()) {
 //                $aSqlError = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-        } catch(\Exception $e) {
-            die($e->getMessage());
+            throw new ModelException(self::SQL_ERROR);
         }
 
         return (int) $stmt->fetchColumn();
     }
 
     /**
-     * @param $idUser
-     * @param $montant
+     * @param int $idUser
+     * @param int $montant
      * @return bool
+     * @throws ModelException
      */
-    public function insertMoneyByIdUser($idUser, $montant)
+    public function insertRubisByIdUser(int $idUser, int $montant)
     {
-        $sql = "INSERT INTO ressources (id_user, money, operation) VALUES (:id_user, :money, :operation)";
+        $sql = "INSERT INTO ressources (id_user, rubis, operation) VALUES (:id_user, :rubis, :operation)";
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':id_user', $idUser);
+        $stmt->bindParam(':rubis', $montant);
+        $stmt->bindParam(':operation', $montant);
 
-        try {
-            $stmt->bindParam(':id_user', $idUser);
-            $stmt->bindParam(':money', $montant);
-            $stmt->bindParam(':operation', $montant);
-
-            if (!$stmt->execute()) {
-                echo '<pre>'; var_dump($stmt->errorInfo()); echo'</pre>'; die;
+        if (!$stmt->execute()) {
 //                $aSqlError = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-        } catch(\Exception $e) {
-            die($e->getMessage());
+            throw new ModelException(self::SQL_ERROR);
         }
 
         return $stmt->closeCursor();
@@ -65,29 +58,24 @@ class RessourcesModel extends AbstractModel
      * @param int $idUser
      * @param int $montant
      * @return bool
+     * @throws ModelException
      */
-    public function updateMoneyByIdUser($idUser, $montant)
+    public function updateRubisByIdUser(int $idUser, int $montant)
     {
-        $sql = "UPDATE ressources SET money = :money, operation = :operation WHERE id_user = :id_user";
+        $sql = "UPDATE ressources SET rubis = :rubis, operation = :operation WHERE id_user = :id_user";
         $stmt = $this->bdd->prepare($sql);
+        $iOldRubis = $this->selectRubisByIdUser($idUser);
+        $iRubis = $iOldRubis + $montant;
 
-        $iOldMoney = $this->getMoneyByIdUser($idUser);
-        $iMoney = $iOldMoney + $montant;
+        if ($iRubis >= 0) {
 
-        if ($iMoney >= 0) {
+            $stmt->bindParam(':id_user', $idUser);
+            $stmt->bindParam(':rubis', $iRubis);
+            $stmt->bindParam(':operation', $montant);
 
-            try {
-                $stmt->bindParam(':id_user', $idUser);
-                $stmt->bindParam(':money', $iMoney);
-                $stmt->bindParam(':operation', $montant);
-
-                if (!$stmt->execute()) {
+            if (!$stmt->execute()) {
 //                $aSqlErrors = $stmt->errorInfo();
-                    throw new \Exception(self::SQL_ERROR);
-                }
-
-            } catch (\Exception $e) {
-                die($e->getMessage());
+                throw new ModelException(self::SQL_ERROR);
             }
 
             return $stmt->closeCursor();

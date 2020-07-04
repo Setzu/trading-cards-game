@@ -8,7 +8,7 @@
 
 namespace Ozyris\Model;
 
-use Exception;
+use Ozyris\Exception\ModelException;
 
 abstract class AbstractModel
 {
@@ -26,7 +26,7 @@ abstract class AbstractModel
      * @param string $host
      * @param string $user
      * @param string $password
-     * @throws Exception
+     * @throws ModelException
      */
     public function __construct($dbname = '', $host = '' , $user = '', $password = '')
     {
@@ -52,7 +52,7 @@ abstract class AbstractModel
         $this->bdd = new \PDO($dsn, $user, $password);
 
         if (!$this->bdd) {
-            throw new Exception('Connexion à la base de données impossible.');
+            throw new ModelException('Connexion à la base de données impossible.');
         }
     }
 }

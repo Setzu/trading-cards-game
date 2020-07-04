@@ -1,9 +1,9 @@
 <?php ?>
-<div class="new-card-box">
-    <div class="row justify-content-md-center" style="margin-bottom: 20px;">
+<div class="standard-box">
+    <div class="row justify-content-md-center">
     <?php foreach ($this->aComparedCards as $idCard => $aInfoCard) { ?>
-        <div class="zoom" style="margin: 0 20px 50px; text-align: center;">
-            <p style="float: right;" class="rarity-effect-<?= $aInfoCard['rarity']; ?>">
+        <div class="zoom" style="margin: 0 20px 50px; text-align: center; z-index: 1;">
+            <p style="float: right;" class="rarity-title-<?= $aInfoCard['rarity']; ?>">
                 <?php
                 if ($aInfoCard['rarity'] > 1) {
                     echo $this->aCardsConf['Rareté'][$aInfoCard['rarity']];
@@ -13,10 +13,10 @@
             <?php if (!$aInfoCard['double']) { ?>
             <p class="new-card-text" style="float: left">New</p>
             <?php } ?>
-            <div class="shop-card" style="background-image: url('<?= '/../img/cartes/' . $this->aCardsConf['Pack 2']['Cartes']['Images'][$idCard] ?>');"></div>
+            <div class="cards" style="background-image: url('<?= '/../img/cartes/' . $this->aCardsConf['Packs'][$this->idPack]['Cartes'][$idCard]['Image'] ?>');"></div>
             <span class="card-name">
                 <?php
-                echo $this->aCardsConf['Pack 2']['Cartes']['Noms'][$idCard];
+                echo $this->aCardsConf['Packs'][$this->idPack]['Cartes'][$idCard]['Nom'];
 
                 if ($aInfoCard['quantity'] > 1) {
                     echo ' x' . $aInfoCard['quantity'];

@@ -12,6 +12,7 @@ use Ozyris\Model\UserModel;
 use Ozyris\Form\Validator\EmailValidator;
 use Ozyris\Form\Validator\PasswordValidator;
 use Ozyris\Form\Validator\StandardValidator;
+use Ozyris\Service\Reception;
 use Ozyris\Service\Ressources;
 use Ozyris\Service\SessionManager;
 use Ozyris\Service\Users;
@@ -23,7 +24,6 @@ class AuthentificationController extends AbstractController
 
     /**
      * Connecte l'utilisateur, stocke l'objet Users en session, puis redirige sur l'accueil
-     * @return void
      */
     public function indexAction()
     {
@@ -31,7 +31,21 @@ class AuthentificationController extends AbstractController
             return $this->redirect('index');
         }
 
-        if ($_POST) {
+        if (!empty($_POST)) {
+
+            if (!array_key_exists('username', $_POST) || !array_key_exists('password', $_POST) ||
+                !array_key_exists('connectToken', $_POST)) {
+                return $this->redirect('authentification');
+            }
+
+            $iToken = (int) htmlspecialchars(trim($_POST['connectToken']));
+
+            if ($this->getSessionValue('connectToken') != $iToken) {
+                return $this->redirect('index');
+            } else {
+                $this->destroySessionValue('connectToken');
+            }
+
             $sUsername = (string) htmlspecialchars(trim($_POST['username']));
 
             $oModelUser = new UserModel();
@@ -40,30 +54,46 @@ class AuthentificationController extends AbstractController
             $sPassword = (string) htmlspecialchars(trim($_POST['password']));
 
             if (count($aDonneesUser) == 0 || !password_verify($sPassword, $aDonneesUser['password'])) {
-                $this->setFlashMessage('Identifiant ou mot de passe incorrect.');
+                $this->addFlashMessage('Identifiant ou mot de passe incorrect.');
 
                 return $this->redirect('authentification');
             }
 
             $oUser = new Users($aDonneesUser);
             $oRessources = new Ressources();
-            $iMoney = $oRessources->getMoneyByIdUser($oUser->getId());
+            $iRubis = $oRessources->getRubisByIdUser($oUser->getId());
+            $oReception = new Reception();
 
             $this->setSessionValues([
                 'user' => $oUser,
-                'money' => $iMoney,
-                'isAuthentified' => true
+                'rubis' => $iRubis,
+                'isAuthentified' => true,
+                'isNewMessage' => $oReception->hasNewMessages($oUser->getId(), Reception::NON_LU)
             ]);
+
+            $oReception = new Reception();
+
+            if ($oReception->isNewDay($oUser->getLastConnection())) {
+                $oReception->addMessage($oUser->getId(), 'Bonus de connection quotidien', 'Bon jeu', 2);
+            }
+
+            $oModelUser->updateConnectionByIdUser($oUser->getId());
 
             return $this->redirect();
         }
 
-        return $this->render('authentification', 'index');
+        $token = random_int(100, 1000);
+        $this->setSessionValues(['connectToken' => $token]);
+
+        $this->setVariables([
+            'connectToken' => $token
+        ]);
+
+        return $this->getView('authentification', 'index');
     }
 
     /**
      * Création d'un nouvel utilisateur et redirige sur l'action index pour le connecter
-     * @return $this
      */
     public function registrationAction()
     {
@@ -71,23 +101,36 @@ class AuthentificationController extends AbstractController
             return $this->redirect('index');
         }
 
-        if ($_POST) {
-            $aInfosUser = array();
+        if (!empty($_POST)) {
+
+            if (!array_key_exists('email', $_POST) || !array_key_exists('username', $_POST) ||
+                !array_key_exists('password', $_POST) || !array_key_exists('confirm-password', $_POST) ||
+                !array_key_exists('registrationToken', $_POST)) {
+                return $this->redirect('authentification', 'registration');
+            }
+
+            $iToken = (int) htmlspecialchars(trim($_POST['registrationToken']));
+
+            if ($this->getSessionValue('registrationToken') != $iToken) {
+                return $this->redirect('registration');
+            } else {
+                $this->destroySessionValue('registrationToken');
+            }
+
             $sUserEmail = (string) htmlspecialchars(trim($_POST['email']));
             $oEmailValidator = new EmailValidator();
             $bEmailIsValid = $oEmailValidator->isValid($sUserEmail);
 
             if (!$bEmailIsValid) {
-                $this->setFlashMessage($oEmailValidator->errorMessage);
+                $this->addFlashMessage($oEmailValidator->errorMessage);
 
                 return $this->redirect('authentification', 'registration');
             }
 
-            // TODO : passer par un service Users
             $oModelUser = new UserModel();
 
             if ($oModelUser->isUserAlreadyExist($sUserEmail)) {
-                $this->setFlashMessage("Un compte a déjà été crée avec cette adresse email.");
+                $this->addFlashMessage("Un compte a déjà été crée avec cette adresse email.");
 
                 return $this->redirect('authentification', 'registration');
             }
@@ -97,13 +140,13 @@ class AuthentificationController extends AbstractController
             $bUsernameIsValid = $oStandarValidator->stringLenght($sUsername, 3, 50);
 
             if (!$bUsernameIsValid) {
-                $this->setFlashMessage($oStandarValidator->errorMessage);
+                $this->addFlashMessage($oStandarValidator->errorMessage);
 
                 return $this->redirect('authentification', 'registration');
             }
 
             if ($oModelUser->getUserByUsernameOrEmail($sUsername)) {
-                $this->setFlashMessage("Ce nom d'utilisateur est déjà utilisé, veuillez en choisir un autre.");
+                $this->addFlashMessage("Ce nom d'utilisateur est déjà utilisé, veuillez en choisir un autre.");
 
                 return $this->redirect('authentification', 'registration');
             }
@@ -114,7 +157,7 @@ class AuthentificationController extends AbstractController
             $bPasswordIsValid = $oPasswordValidator->isValid($sPassword, $sConfirmPassword);
 
             if (!$bPasswordIsValid) {
-                $this->setFlashMessage($oPasswordValidator->errorMessage);
+                $this->addFlashMessage($oPasswordValidator->errorMessage);
 
                 return $this->redirect('authentification', 'registration');
             }
@@ -127,15 +170,33 @@ class AuthentificationController extends AbstractController
 
             $oUser = new Users($aInfosUser);
             $oModelUser->insertUserByInfosUser($oUser);
+            $oUser->setId($oModelUser->getIdUserByUsername($oUser->getUsername()));
             $oRessources = new Ressources();
-            $oRessources->starterMoneyByIdUser($oModelUser->getIdUserByUsername($oUser->getUsername()));
+            $oRessources->starterRubisByIdUser($oUser->getId());
 
-            $this->setFlashMessage('Votre compte a été crée avec succès.', false);
+            $this->addFlashMessage('Votre compte a été crée avec succès.', false);
+            $iRubis = $oRessources->getRubisByIdUser($oUser->getId());
+            $oReception = new Reception();
+            $oReception->addMessage($oUser->getId(), 'Cadeau de bienvenue', 'Bon jeu', 1);
 
-            return $this->indexAction();
+            $this->setSessionValues([
+                'user' => $oUser,
+                'rubis' => $iRubis,
+                'isAuthentified' => true,
+                'isNewMessage' => $oReception->hasNewMessages($oUser->getId(), Reception::NON_LU)
+            ]);
+
+            return $this->redirect('index');
         }
 
-        return $this->render('authentification', 'registration');
+        $token = random_int(100, 1000);
+        $this->setSessionValues(['registrationToken' => $token]);
+
+        $this->setVariables(
+            ['registrationToken' => $token]
+        );
+
+        return $this->getView('authentification', 'registration');
     }
 
     /**

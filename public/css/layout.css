@@ -1,7 +1,7 @@
 body {
     width: 100%;
     height: 100%;
-    /* background: url('/../img/background/background_4.png') fixed;
+    background: url('/../img/background/background_4.png') fixed;
     background-size: cover;
     /*background: #00BCFF; !* For browsers that do not support gradients *!*/
     /*background: -webkit-linear-gradient(#00BCFF, #FFFFFF); !* For Safari 5.1 to 6.0 *!*/
@@ -31,12 +31,18 @@ a:hover {
     text-decoration: none;
 }
 .standard-box {
-    background: rgba(255, 255, 255, 0.5);
+    background: rgba(136, 136, 136, 0.8);
     margin-top: 20px;
     padding: 10px 10px 10px 10px;
     /*box-shadow: 5px 5px 15px #888888;*/
-    min-height: 500px;
+    min-height: 700px;
 }
+
+.box-actus {
+    background: rgba(84, 84, 84, 1);
+    height: 400px;
+}
+
 .flashmessage {
     text-align: center;
     margin-top: 10px;
@@ -44,14 +50,8 @@ a:hover {
 .table-dark {
     background-color: rgba(52, 58, 64, 0.9);
 }
-.zoom {
-    transition: transform .1s;
-}
-
-.zoom:hover {
-    -ms-transform: scale(1.65); /* IE 9 */
-    -webkit-transform: scale(1.65); /* Safari 3-8 */
-    transform: scale(1.65);
+#collection-table {
+    font-size: 20px;
 }
 /* Retrait des styles des différents framework*/
 table.dataTable tbody tr {
@@ -65,6 +65,6 @@ ul.ui-tabs-nav.ui-corner-all.ui-helper-reset.ui-helper-clearfix.ui-widget-header
     background: none !important;
     border: none !important;
 }
-#collection-table {
-    font-size: 20px;
+.ui-tabs .ui-tabs-nav .ui-tabs-anchor {
+    float: none !important;
 }

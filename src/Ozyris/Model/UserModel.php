@@ -8,6 +8,7 @@
 
 namespace Ozyris\Model;
 
+use Ozyris\Exception\ModelException;
 use Ozyris\Service\Users;
 
 class UserModel extends AbstractModel
@@ -23,58 +24,44 @@ class UserModel extends AbstractModel
     /**
      * @param Users $aInfosUser
      * @return bool
-     * @throws \Exception
+     * @throws ModelException
      */
     public function insertUserByInfosUser(Users $aInfosUser)
     {
-        $sql = "INSERT INTO users (username, email, password, admin) VALUES (:username, :email, :password, :admin)";
+        $sql = "INSERT INTO users (username, email, password) VALUES (:username, :email, :password)";
         $stmt = $this->bdd->prepare($sql);
 
         $sUsername = $aInfosUser->getUsername();
         $sEmail = $aInfosUser->getEmail();
         $sPassword = $aInfosUser->getPassword();
-        $bAdmin = $aInfosUser->isAdmin();
 
-        try {
-            $stmt->bindParam(':username', $sUsername);
-            $stmt->bindParam(':email', $sEmail);
-            $stmt->bindParam(':password', $sPassword);
-            $stmt->bindParam(':admin', $bAdmin);
+        $stmt->bindParam(':username', $sUsername);
+        $stmt->bindParam(':email', $sEmail);
+        $stmt->bindParam(':password', $sPassword);
 
-            if (!$stmt->execute()) {
-//                $aSqlError = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-        } catch(\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel insertUserByInfosUser : ' . $aSqlError[2]);
         }
 
         return $stmt->closeCursor();
     }
 
     /**
-     * Récupère toutes les infos du user
-     *
      * @param string $value
      * @return array
+     * @throws ModelException
      */
     public function getUserByUsernameOrEmail($value)
     {
-        $sql = "SELECT id, username, email, password, admin FROM users
+        $sql = "SELECT id, username, email, password, last_connection FROM users
                 WHERE username = :username OR email = :username";
-
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':username', $value);
 
-        try {
-            $stmt->bindParam(':username', $value);
-            
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel getUserByUsernameOrEmail : ' . $aSqlError[2]);
         }
 
         return $stmt->fetch(\PDO::FETCH_ASSOC);// Permet de récupérer uniquement les tableaux associatifs
@@ -83,31 +70,23 @@ class UserModel extends AbstractModel
     /**
      * @param string $username
      * @return mixed
+     * @throws \Exception
      */
     public function getIdUserByUsername($username)
     {
         $sql = "SELECT id FROM users WHERE username = :username";
-
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':username', $username);
 
-        try {
-            $stmt->bindParam(':username', $username);
-
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel getIdUserByUsername : ' . $aSqlError[2]);
         }
 
         return $stmt->fetchColumn();
     }
 
     /**
-     * Retourne true si l'utilisateur existe déjà
-     *
      * @param string $value
      * @return bool
      * @throws \Exception
@@ -118,21 +97,16 @@ class UserModel extends AbstractModel
         $stmt = $this->bdd->prepare($sql);
 
         $sValue = (string) $value;
+        $stmt->bindParam(':username', $sValue);
+        $stmt->bindParam(':email', $sValue);
 
-        try {
-            $stmt->bindParam(':username', $sValue);
-            $stmt->bindParam(':email', $sValue);
-
-            if (!$stmt->execute()) {
-//                $aSqlError = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-            
-            $iResult = $stmt->fetchColumn();
-            $stmt->closeCursor();
-        } catch(\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel isUserAlreadyExist : ' . $aSqlError[2]);
         }
+
+        $iResult = $stmt->fetchColumn();
+        $stmt->closeCursor();
 
         return (!empty($iResult));
     }
@@ -142,25 +116,20 @@ class UserModel extends AbstractModel
      * @param string $useremail
      * @param string $token
      * @return bool
+     * @throws ModelException
      */
     public function resetPasswordByToken($id, $useremail, $token)
     {
         $sql = "INSERT INTO reset_password (user_id, user_email, token)
                 VALUES (:user_id, :user_email, :token)";
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':user_id', $id);
+        $stmt->bindParam(':user_email', $useremail);
+        $stmt->bindParam(':token', $token);
 
-        try {
-            $stmt->bindParam(':user_id', $id);
-            $stmt->bindParam(':user_email', $useremail);
-            $stmt->bindParam(':token', $token);
-
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-            
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel resetPasswordByToken : ' . $aSqlError[2]);
         }
 
         return $stmt->closeCursor();
@@ -169,26 +138,21 @@ class UserModel extends AbstractModel
     /**
      * @param string $token
      * @return array
+     * @throws ModelException
      */
     public function getResetPasswordByToken($token)
     {
         $sql = "SELECT id, user_email FROM reset_password WHERE token = :token AND validated != 1";
         $stmt = $this->bdd->prepare($sql);
-
         $token = (string) $token;
+        $stmt->bindParam(':token', $token);
 
-        try {
-            $stmt->bindParam(':token', $token);
-            
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-            
-            $stmt->closeCursor();
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel getResetPasswordByToken : ' . $aSqlError[2]);
         }
+
+        $stmt->closeCursor();
 
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
@@ -198,23 +162,18 @@ class UserModel extends AbstractModel
      * @param string $email
      * @param integer|null $id
      * @return bool
+     * @throws ModelException
      */
     public function updatePasswordByEmail($password, $email, $id = null)
     {
         $sql = "UPDATE users SET password = :password WHERE email = :email";
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':password', $password);
+        $stmt->bindParam(':email', $email);
 
-        try {
-            $stmt->bindParam(':password', $password);
-            $stmt->bindParam(':email', $email);
-
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-            
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel updatePasswordByEmail : ' . $aSqlError[2]);
         }
 
         if (!is_null($id)) {
@@ -227,22 +186,36 @@ class UserModel extends AbstractModel
     /**
      * @param integer $id
      * @return bool
+     * @throws ModelException
      */
     public function updateResetPasswordById($id)
     {
         $sql = "UPDATE reset_password SET date_modification = NOW(), validated = 1 WHERE id = :id AND validated != 1";
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':id', $id);
 
-        try {
-            $stmt->bindParam(':id', $id);
-            
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new \Exception(self::SQL_ERROR);
-            }
-            
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel updateResetPasswordById : ' . $aSqlError[2]);
+        }
+
+        return $stmt->closeCursor();
+    }
+
+    /**
+     * @param int $idUser
+     * @return bool
+     * @throws ModelException
+     */
+    public function updateConnectionByIdUser(int $idUser)
+    {
+        $sql = "UPDATE users SET last_connection = NOW() WHERE id = :id";
+        $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':id', $idUser);
+
+        if (!$stmt->execute()) {
+            $aSqlError = $stmt->errorInfo();
+            throw new ModelException('UserModel addConnection : ' . $aSqlError[2]);
         }
 
         return $stmt->closeCursor();

@@ -6,12 +6,15 @@
  * Time: 12:07
  */
 
+use Ozyris\Service\Router;
+
 /**
  * Appel au fichier de conf et du layout dans un bloc try catch pour récupérer toutes les exceptions
  */
 try {
     include_once __DIR__ . '/../config/config.php';
-    include_once __DIR__ . '/../src/Ozyris/View/layout/layout.php';
+    $oRouter = new Router();
+    $oRouter->run();
 } catch(\Exception $e) { ?>
     <div class="container">
         <div class="row">

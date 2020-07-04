@@ -9,20 +9,22 @@
 namespace Ozyris\Controller;
 
 use Exception;
-use Ozyris\Service\AssetManager;
+use Ozyris\Exception\ControllerException;
 use Ozyris\Service\SessionManager;
 use Ozyris\Stdlib\ControllerInterface;
 
 abstract class AbstractController extends SessionManager implements ControllerInterface
 {
 
+    public $view;
+
     const DEFAULT_DIRECTORY = 'index';
     const DEFAULT_VIEW = 'index';
 
     /**
-     * Créée une propriété pour chacunes des valeurs du tableau $aVariables
+     * Création d'une propriété pour chaque valeur du tableau $aVariables
      * Le nom des propriétés seront égales aux clés du tableau $aVariables
-     * Les variables seront accessibles dans les vues avec $this->nom_variable
+     * Les propriétés seront accessibles dans les vues avec $this->nom_propriété
      *
      * @param array $aVariables
      * @return $this
@@ -34,7 +36,7 @@ abstract class AbstractController extends SessionManager implements ControllerIn
             if (!is_string($sName)) {
                 throw new Exception('La clé doit être une chaîne de caractères.');
             }
-            // Création dynamique de la priopriété
+
             $this->{$sName} = $mValue;
         }
 
@@ -59,14 +61,13 @@ abstract class AbstractController extends SessionManager implements ControllerIn
     }
 
     /**
-     * Affichage de la vue en fonction des paramètres
-     *
      * @param string $directory
      * @param string $view
-     * @return mixed
-     * @throws Exception
+     * @param bool $layout
+     * @return $this
+     * @throws ControllerException
      */
-    protected function render($directory = '', $view = '')
+    public function getView(string $directory = '', string $view = '', bool $layout = true)
     {
         if (empty($directory) || !is_string($directory)) {
             $directory = self::DEFAULT_DIRECTORY;
@@ -76,16 +77,21 @@ abstract class AbstractController extends SessionManager implements ControllerIn
             $view = self::DEFAULT_VIEW;
         }
 
-        $sFilePath = __DIR__ . '/../View/' . $directory . '/' . $view . '.php';
+        $this->view = __DIR__ . '/../View/' . $directory . '/' . $view . '.php';
 
-        // Contrôle de l'existence du fichier
-        if (file_exists($sFilePath)) {
-            require_once $sFilePath;
-        } else {
-            throw new Exception('Le fichier ' . $sFilePath . ' n\'a pas été trouvé.');
+        if (!file_exists($this->view)) {
+            throw new ControllerException('Le fichier ' . $this->view . ' n\'a pas été trouvé.');
         }
 
-        return $this;
+        if ($layout) {
+            $this->setVariables([
+                'content' => $this->view
+            ]);
+
+            return require_once __DIR__ . '/../View/layout/layout.php';
+        }
+
+        return require_once $this->view;
     }
 
     /**
@@ -116,11 +122,6 @@ abstract class AbstractController extends SessionManager implements ControllerIn
      */
     public function pageNotFound()
     {
-        if (!file_exists(__DIR__ . '/../View/error/404.php')) {
-            // Alors ça c'est le comble \ö/
-            throw new Exception('La page 404 est introuvable.');
-        }
-
-        return $this->render('error', '404');
+        return $this->getView('error', '404');
     }
 }

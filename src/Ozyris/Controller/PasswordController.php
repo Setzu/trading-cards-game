@@ -16,9 +16,6 @@ use Ozyris\Validator\PasswordValidator;
 
 class PasswordController extends AbstractController
 {
-    /**
-     * @return $this
-     */
     public function indexAction()
     {
         if (SessionManager::isAuth()) {
@@ -31,7 +28,7 @@ class PasswordController extends AbstractController
             $bEmailIsValid = $oEmailValidator->isValid($sUserEmail);
 
             if (!$bEmailIsValid) {
-                $this->setFlashMessage($oEmailValidator->errorMessage);
+                $this->addFlashMessage($oEmailValidator->errorMessage);
 
                 return $this->redirect('authentification', 'forgotpassword');
             }
@@ -40,7 +37,7 @@ class PasswordController extends AbstractController
             $aDonneesUser = $oModelUser->getUserByUsernameOrEmail($sUserEmail);
 
             if (!$aDonneesUser) {
-                $this->setFlashMessage('Aucun compte n\'existe avec cette adresse email.');
+                $this->addFlashMessage('Aucun compte n\'existe avec cette adresse email.');
 
                 return $this->redirect('authentification', 'forgotpassword');
             }
@@ -74,7 +71,7 @@ class PasswordController extends AbstractController
             $oMailer = new Mailer();
             $oMailer->sendMail($sUserEmail, $sSujet, $sMessage, $headers);
 
-            $this->setFlashMessage(
+            $this->addFlashMessage(
                 "Un lien de réinitialisation de mot de passe vous a été envoyé par mail à l'adresse $sUserEmail",
                 false
             );
@@ -82,7 +79,7 @@ class PasswordController extends AbstractController
             return $this->redirect();
         }
 
-        return $this->render('password');
+        return $this->getView('password');
     }
 
     /**
@@ -100,7 +97,7 @@ class PasswordController extends AbstractController
 
             // On verifie qu'il s'agit d'un token valide
             if (empty($aResetPassword)) {
-                $this->setFlashMessage("Le lien saisi n'est pas valide.");
+                $this->addFlashMessage("Le lien saisi n'est pas valide.");
 
                 return $this->redirect();
             }
@@ -116,9 +113,6 @@ class PasswordController extends AbstractController
         return $this->redirect('password', 'changepassword');
     }
 
-    /**
-     * @return $this|bool
-     */
     public function changePasswordAction()
     {
         if ($_POST) {
@@ -135,7 +129,7 @@ class PasswordController extends AbstractController
 
             // Si le mot de passe n'est pas valide on redirige
             if (!$bPasswordIsValid) {
-                $this->setFlashMessage($oPasswordValidator->errorMessage);
+                $this->addFlashMessage($oPasswordValidator->errorMessage);
 
                 return $this->redirect('password', 'changepassword');
             }
@@ -151,12 +145,12 @@ class PasswordController extends AbstractController
             );
 
             // Redirection avec message de confirmation sur l'accueil
-            $this->setFlashMessage('Votre mot de passe a été modifié avec succès', false);
+            $this->addFlashMessage('Votre mot de passe a été modifié avec succès', false);
             $this->destroySessionValue('reset-password');
 
             return $this->redirect();
         }
 
-        return $this->render('password', 'changepassword');
+        return $this->getView('password', 'changepassword');
     }
 }

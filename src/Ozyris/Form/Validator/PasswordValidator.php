@@ -18,6 +18,7 @@ class PasswordValidator extends StandardValidator
     public $errorMessage = '';
 
     /**
+     * TODO : Modifier le isValid pour qu'il ne fasse plus la comparaison entre 2 passwords
      * @param string $value
      * @param string $confirm
      * @return bool
@@ -41,5 +42,10 @@ class PasswordValidator extends StandardValidator
         }
 
         return true;
+    }
+
+    public function comparePassword($mainPassword, $confirmPassword)
+    {
+
     }
 }

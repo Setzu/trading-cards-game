@@ -14,22 +14,17 @@ class CardsListModel extends AbstractModel
     /**
      * @param int $pack
      * @return array
+     * @throws ModelException
      */
-    protected function getCardsByPack($pack)
+    protected function selectCardsByPack(int $pack)
     {
         $sql = "SELECT card_name, rarity FROM cardslist WHERE pack = :pack";
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':pack', $pack);
 
-        try {
-            $stmt->bindParam(':pack', $pack);
-
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new ModelException(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+//          $stmt->errorInfo();
+            throw new ModelException(self::SQL_ERROR);
         }
 
         $aCardsList = [];
@@ -46,21 +41,16 @@ class CardsListModel extends AbstractModel
 
     /**
      * @return array
+     * @throws ModelException
      */
-    protected function getCardsList()
+    protected function selectCardsList()
     {
         $sql = "SELECT card_name, rarity FROM cardslist";
-
         $stmt = $this->bdd->prepare($sql);
 
-        try {
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new ModelException(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+//          $stmt->errorInfo();
+            throw new ModelException(self::SQL_ERROR);
         }
 
         $aCardsList = [];
@@ -79,24 +69,18 @@ class CardsListModel extends AbstractModel
      * @param int $pack
      * @param int $rarity
      * @return array
+     * @throws ModelException
      */
-    protected function getCardsByPackAndRarity($pack, $rarity)
+    protected function selectCardsByPackAndRarity($pack, $rarity)
     {
         $sql = "SELECT card_name, rarity FROM cardslist WHERE pack = :pack, rarity = :rarity";
-
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':pack', $pack);
+        $stmt->bindParam(':rarity', $rarity);
 
-        try {
-            $stmt->bindParam(':pack', $pack);
-            $stmt->bindParam(':rarity', $rarity);
-
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new ModelException(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+//          $stmt->errorInfo();
+            throw new ModelException(self::SQL_ERROR);
         }
 
         $aCardsList = [];
@@ -116,25 +100,19 @@ class CardsListModel extends AbstractModel
      * @param int $pack
      * @param int $rarity
      * @return array
+     * @throws ModelException
      */
-    protected function getCard($idCard, $pack, $rarity)
+    protected function selectCard($idCard, $pack, $rarity)
     {
         $sql = "SELECT card_name, rarity FROM cardslist WHERE id_card = :id_card AND pack = :pack AND rarity = :rarity";
-
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':id_card', $idCard);
+        $stmt->bindParam(':pack', $pack);
+        $stmt->bindParam(':rarity', $rarity);
 
-        try {
-            $stmt->bindParam(':id_card', $idCard);
-            $stmt->bindParam(':pack', $pack);
-            $stmt->bindParam(':rarity', $rarity);
-
-            if (!$stmt->execute()) {
-//                $aSqlErrors = $stmt->errorInfo();
-                throw new ModelException(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+//          $stmt->errorInfo();
+            throw new ModelException(self::SQL_ERROR);
         }
 
         return $stmt->fetch(\PDO::FETCH_ASSOC);
@@ -144,25 +122,20 @@ class CardsListModel extends AbstractModel
      * @param int $idCard
      * @param int $pack
      * @return array
+     * @throws ModelException
      */
-    protected function getCounterByIdAndPack($idCard, $pack)
+    protected function selectCounterByIdAndPack($idCard, $pack)
     {
         $sql = "SELECT id, counter FROM cardslist WHERE id_card = :id_card AND pack = :pack";
-
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':id_card', $idCard);
+        $stmt->bindParam(':pack', $pack);
 
-        try {
-            $stmt->bindParam(':id_card', $idCard);
-            $stmt->bindParam(':pack', $pack);
-
-            if (!$stmt->execute()) {
-                // $aSqlErrors = $stmt->errorInfo();
-                throw new ModelException(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+//          $stmt->errorInfo();
+            throw new ModelException(self::SQL_ERROR);
         }
+
 
         return $stmt->fetch(\PDO::FETCH_ASSOC);
     }
@@ -171,23 +144,18 @@ class CardsListModel extends AbstractModel
      * @param int $id
      * @param int $counter
      * @return bool
+     * @throws ModelException
      */
-    protected function incrementCounterById($id, $counter)
+    protected function updateCounter($id, $counter)
     {
         $sql = "UPDATE cardslist SET counter = :counter WHERE id = :id";
         $stmt = $this->bdd->prepare($sql);
+        $stmt->bindParam(':id', $id);
+        $stmt->bindParam(':counter', $counter);
 
-        try {
-            $stmt->bindParam(':id', $id);
-            $stmt->bindParam(':counter', $counter);
-
-            if (!$stmt->execute()) {
-                //$aSqlErrors = $stmt->errorInfo();
-                throw new ModelException(self::SQL_ERROR);
-            }
-
-        } catch (\Exception $e) {
-            die($e->getMessage());
+        if (!$stmt->execute()) {
+//          $stmt->errorInfo();
+            throw new ModelException(self::SQL_ERROR);
         }
 
         return $stmt->closeCursor();

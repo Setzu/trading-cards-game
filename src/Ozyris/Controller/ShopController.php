@@ -4,87 +4,85 @@
 namespace Ozyris\Controller;
 
 
+use Ozyris\Service\Actus;
 use Ozyris\Service\Collection;
 use Ozyris\Service\Ressources;
 use Ozyris\Service\SessionManager;
-use Ozyris\Service\Users;
 
 class ShopController extends AbstractController
 {
 
-    /**
-     * @return mixed|ShopController
-     * @throws \Exception
-     */
     public function indexAction()
     {
         if (!SessionManager::isAuth()) {
-            $this->setFlashMessage('Vous devez être connecté pour accéder à cet espace');
+            $this->addFlashMessage('Vous devez être connecté pour accéder à cet espace');
 
             return $this->redirect('authentification');
         }
 
         $oRessources = new Ressources();
-        $iUserMoney = $oRessources->getMoneyByIdUser($_SESSION['user']->getId());
+        $iUserRubis = $oRessources->getRubisByIdUser($_SESSION['user']->getId());
         $token = random_int(100, 1000);
         $this->setSessionValues(['token' => $token]);
 
+        $aCardsConf = include_once(__DIR__ . '/../../../config/cards.conf.php');
+
         $this->setVariables([
-            'iMoney' => $iUserMoney,
+            'iRubis' => $iUserRubis,
+            'aCardsConf' => $aCardsConf,
             'token' => $token
         ]);
 
-        return $this->render('shop');
+        return $this->getView('shop');
     }
 
-    /**
-     * @return mixed|ShopController|void
-     * @throws \Exception
-     */
     public function buyPackAction()
     {
         if (!SessionManager::isAuth()) {
-            $this->setFlashMessage('Vous devez être connecté pour accéder à cet espace');
+            $this->addFlashMessage('Vous devez être connecté pour accéder à cet espace');
 
             return $this->redirect('authentification');
         }
 
-        // Récupérer le numéro du pack en post
         if (!empty($_POST)) {
 
-            // TODO appeler un validateur
-            if (!$_POST['pack']) {
+            if (!array_key_exists('token', $_POST) || !array_key_exists('idPack', $_POST)) {
                 return $this->redirect('shop');
             }
 
-            $pack = $_POST['pack'];
-            $idPack = $_POST['idpack'];
+            $iToken = (int) htmlspecialchars(trim($_POST['token']));
             $idUser = $_SESSION['user']->getId();
 
-            if ($this->getSessionValue('token') != $_POST['token']) {
+            if ($this->getSessionValue('token') != $iToken) {
                 return $this->redirect('shop');
             } else {
                 $this->destroySessionValue('token');
             }
 
+            $idPack = (int) htmlspecialchars(trim($_POST['idPack']));
             $aCardsConf = include_once(__DIR__ . '/../../../config/cards.conf.php');
-            $oRessources = new Ressources();
-            $iUserMoney = $oRessources->getMoneyByIdUser($idUser);
 
-            if ($iUserMoney < $aCardsConf[$pack]['Prix']) {
-                $this->setFlashMessage('Vous n\'avez pas suffisamment de gemmes !');
+            if (!array_key_exists($idPack, $aCardsConf['Packs'])) {
+                return $this->redirect('shop');
+            }
+
+            $oRessources = new Ressources();
+            $iUserRubis = $oRessources->getRubisByIdUser($idUser);
+
+            if ($iUserRubis < $aCardsConf['Packs'][$idPack]['Prix']) {
+                $this->addFlashMessage('Vous n\'avez pas suffisamment de gemmes !');
 
                 return $this->redirect('shop');
             }
 
-            if (!$oRessources->updateMoneyByIdUser($_SESSION['user']->getId(), - $aCardsConf[$pack]['Prix'])) {
-                $this->setFlashMessage('Une erreur est survenue, veuillez réessayer ultèrieurement.');
+            if (!$oRessources->updateRubisByIdUser($_SESSION['user']->getId(), - $aCardsConf['Packs'][$idPack]['Prix'])) {
+                $this->addFlashMessage('Une erreur est survenue, veuillez réessayer ultèrieurement.');
 
                 return $this->redirect('shop');
             }
 
             // TODO : voir problème maj rubis dans le header lors de l'achat
-            $this->setSessionValues(['money' => $iUserMoney - $aCardsConf[$pack]['Prix']]);
+            $this->setSessionValues(['rubis' => $iUserRubis - $aCardsConf['Packs'][$idPack]['Prix']]);
 
             $aCards = [];
             $oCollection = new Collection();
@@ -95,13 +93,13 @@ class ShopController extends AbstractController
 
                 // Récupération des id de cartes dans le fichier de conf en fonction de la rareté
                 if ($iRandForRarity > 50) {
-                    $idCard = $aCardsConf[$pack]['Cartes']['Rareté'][1][array_rand($aCardsConf[$pack]['Cartes']['Rareté'][1], 1)];
+                    $idCard = $aCardsConf['Packs'][$idPack]['Rareté'][1][array_rand($aCardsConf['Packs'][$idPack]['Rareté'][1], 1)];
                     $aCards[$idCard]['rarity'] = 1;
                 } elseif ($iRandForRarity > 5) {
-                    $idCard = $aCardsConf[$pack]['Cartes']['Rareté'][2][array_rand($aCardsConf[$pack]['Cartes']['Rareté'][2], 1)];
+                    $idCard = $aCardsConf['Packs'][$idPack]['Rareté'][2][array_rand($aCardsConf['Packs'][$idPack]['Rareté'][2], 1)];
                     $aCards[$idCard]['rarity'] = 2;
                 } else {
-                    $idCard = $aCardsConf[$pack]['Cartes']['Rareté'][3][array_rand($aCardsConf[$pack]['Cartes']['Rareté'][3], 1)];
+                    $idCard = $aCardsConf['Packs'][$idPack]['Rareté'][3][array_rand($aCardsConf['Packs'][$idPack]['Rareté'][3], 1)];
                     $aCards[$idCard]['rarity'] = 3;
                 }
 
@@ -110,36 +108,29 @@ class ShopController extends AbstractController
 
             $aCollection = $oCollection->getCollectionByIdUser($idUser);
             $aComparedCards = $oCollection->getComparedCards($aCollection, $aCards);
+            $oActus = new Actus();
 
-            foreach ($aComparedCards as $id => $aInfos) {
-                if ($aInfos['double']) {
-                    $oCollection->updateCardQuantity($idUser, $id , $idPack, $aInfos['quantity']);
+            foreach ($aComparedCards as $id => $aCardInfos) {
+                if ($aCardInfos['double']) {
+                    $oCollection->updateCardQuantity($idUser, $id , $idPack, $aCardInfos['total']);
                 } else {
-                    $oCollection->addNewCard($idUser, $id, $idPack, $aInfos['quantity']);
+                    $oCollection->addNewCard($idUser, $id, $idPack, $aCardInfos['quantity']);
+                }
+
+                if ($aCardInfos['rarity'] == 3) {
+                    $oActus->addURCard($_SESSION['user']->getUsername(), $aCardsConf['Packs'][$idPack]['Cartes'][$id]['Nom']);
                 }
             }
 
             $this->setVariables([
                 'aComparedCards' => $aComparedCards,
                 'aCardsConf' => $aCardsConf,
+                'idPack' => $idPack
             ]);
 
-            return $this->render('shop', 'newcards');
+            return $this->getView('shop', 'newcards');
         }
 
         return $this->redirect('shop');
-    }
-
-    /**
-     * Méthode appeleée en ajax : ajax.js
-     *
-     * @return bool|null
-     * @throws \Exception
-     */
-    public function updateMoneyAction()
-    {
-        if ($_POST) {
-            echo $this->getSessionValue('money');
-        }
     }
 }

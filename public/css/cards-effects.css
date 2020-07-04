@@ -1,8 +1,8 @@
-.rarity-effect-1 {
+.rarity-title-1 {
     margin-bottom: 0;
     font-style: italic;
 }
-.rarity-effect-2 {
+.rarity-title-2 {
     background: -webkit-linear-gradient(#11e400, #ffffff) no-repeat;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
@@ -10,8 +10,8 @@
     font-weight: bold;
     font-style: italic;
 }
-.rarity-effect-3 {
-    background: -webkit-linear-gradient(45deg, #1be0ff, #fff700, #ffffff) no-repeat;
+.rarity-title-3 {
+    background: -webkit-linear-gradient(45deg, #1be0ff, #fff700) no-repeat;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
     margin-bottom: 0;
@@ -25,4 +25,16 @@
     margin-bottom: 0;
     font-size: 25px;
     font-weight: bold;
+}
+.rarity-background-1 {
+    background-color: #888888;
+    border: 2px solid #000000;
+}
+.rarity-background-2 {
+    background: radial-gradient(ellipse at top, #11e400, #fff), radial-gradient(ellipse at bottom, #11e400, #fff);
+    border: 2px solid #11e400;
+}
+.rarity-background-3 {
+    background-color: #888888;
+    border: 2px solid #000000;
 }

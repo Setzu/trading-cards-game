@@ -3,7 +3,7 @@ DROP TABLE ressources;
 CREATE TABLE IF NOT EXISTS ressources (
   id int(5) PRIMARY KEY NOT NULL AUTO_INCREMENT,
   id_user INT(5) NOT NULL UNIQUE,
-  money INT NOT NULL,
+  rubis INT NOT NULL,
   operation INT NOT NULL,
   date_last_operation TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) DEFAULT CHARSET=utf8 COLLATE=utf8_general_ci;

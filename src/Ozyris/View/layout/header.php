@@ -39,8 +39,9 @@
         </li>
     </ul>
 
-    <a href="/shop" class="btn btn-outline-dark" id="money">
-        <?= $_SESSION['money']; ?>
+    <!-- ICONE RUBIS -->
+    <a href="/shop" class="btn btn-outline-dark">
+        <span id="rubis"><?= $_SESSION['rubis']; ?></span>
         <svg class="bi bi-gem" width="32" height="32" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="color: #ea2900;">
             <path fill-rule="evenodd" d="M3.1.7a.5.5 0 0 1 .4-.2h9a.5.5 0 0 1 .4.2l2.976 3.974c.149.185.156.45.01.644L8.4 15.3a.5.5 0 0 1-.8 0L.1 5.3a.5.5 0 0 1 0-.6l3-4zm11.386 3.785l-1.806-2.41-.776 2.413 2.582-.003zm-3.633.004l.961-2.989H4.186l.963 2.995 5.704-.006zM5.47 5.495l5.062-.005L8 13.366 5.47 5.495zm-1.371-.999l-.78-2.422-1.818 2.425 2.598-.003zM1.499 5.5l2.92-.003 2.193 6.82L1.5 5.5zm7.889 6.817l2.194-6.828 2.929-.003-5.123 6.831z"/>
         </svg>
@@ -56,28 +57,26 @@
     </a>
 
     <!-- ICONE ENVELOPPE -->
-    <a href="/" class="btn">
+    <a href="/reception" class="btn">
         <!-- Ajouter condition si mail non lu -->
+        <?php if ($_SESSION['isNewMessage']) { ?>
         <svg class="bi bi-circle-fill" width="8" height="8" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg" style="float: right; color: #11e400;">
             <circle cx="8" cy="8" r="8"/>
         </svg>
+        <?php } ?>
         <svg class="bi bi-envelope-fill" width="32" height="32" viewBox="0 0 16 16" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
             <path fill-rule="evenodd" d="M.05 3.555A2 2 0 0 1 2 2h12a2 2 0 0 1 1.95 1.555L8 8.414.05 3.555zM0 4.697v7.104l5.803-3.558L0 4.697zM6.761 8.83l-6.57 4.027A2 2 0 0 0 2 14h12a2 2 0 0 0 1.808-1.144l-6.57-4.027L8 9.586l-1.239-.757zm3.436-.586L16 11.801V4.697l-5.803 3.546z"/>
         </svg>
     </a>
 
+    <!-- BOUTON DECONNEXION -->
     <form class="form-inline my-2 my-lg-0" action="/authentification/disconnect" method="post" role="form" id="login-form">
         <button type="submit" class="btn btn-outline-danger my-2 my-sm-2" name="submit">Se deconnecter</button>
     </form>
 
 <?php } else { ?>
-    <form class="form-inline my-2 my-lg-0" action="/authentification" method="post" role="form" id="login-form">
-        <input class="form-control mr-sm-2" type="text" name="username" placeholder="Identifiant" aria-label="Username">
-        <input class="form-control mr-sm-2" type="password" name="password" placeholder="Mot de passe" aria-label="Password">
-        <button class="btn btn-outline-success my-2 mr-sm-2" type="submit" name="submit">Se connecter</button>
-        <a href="/authentification/registration" class="btn btn-outline-primary form-control mr-sm-2">S'inscrire</a>
-    </form>
-
+    <a href="/authentification" class="btn btn-outline-success mr-sm-2">Se connecter</a>
+    <a href="/authentification/registration" class="btn btn-outline-primary mr-sm-2">S'inscrire</a>
 <?php } ?>
 
 </nav>
